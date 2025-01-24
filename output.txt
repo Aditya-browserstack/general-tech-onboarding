@@ -1,0 +1,29 @@
+The request that took the longest time is :
+6920682:prod5.browserstack.com/2015-06-10/home/app/railsApp/shared/log/production.log:5219342:Completed 500 Internal Server Error in 65558ms
+
+The list of requests with their frequency are :
+"/admin/automation_stats 3
+"/admin/blacklist_and_block_ip" 1
+"/admin/run_query" 1
+"/admin/user_search" 2
+"/automate" 2
+"/automate/2f791dca945ec933e1131cbd29f2623ba28fa5c7/error_logs 1
+"/automate/8c7560d37c308befea72bea54db5253b9a2fbe50/error_logs" 1
+"/automate/9d1f22d3e2df4170283248234c7ba39618a02d42/error_logs" 1
+"/automate/a8c63b75a162f98506c8563f6dc58ea636e7f53a/error_logs 1
+"/automate/builds/71652f6a4b5270fbf9c1fd727d169df78a60e173/sessions/2f791dca945ec933e1131cbd29f2623ba28fa5c7 1
+"/automate/builds/71652f6a4b5270fbf9c1fd727d169df78a60e173/sessions/a47b4d1c2fb984695035fff62a74d83b170884df 1
+"/automate/dashboard_update/28032107/new 1
+"/automate/dashboard_update/28090539/new 1
+"/automate/dashboard_update/28091011/new 1
+"/automate/dashboard_update/28105389/new 1
+"/main/sns_data" 2
+"/proxy/port 18
+"/terminal/find_session_id" 13
+"/terminal/is_on 5
+"/terminal/start" 3
+"/terminal/stop 2
+"/terminal/update_time" 1
+"/user/disconnect_tunnel 14
+"/user/features_seen" 1
+"/user/onboarded" 1

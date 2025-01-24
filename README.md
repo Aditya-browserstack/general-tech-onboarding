@@ -20,4 +20,4 @@ awk '{print $2,$1}': Rearranges the output to display the endpoint first and cou
 
 
 
-**NOTE**: To run this :- "bash script.js"
+**NOTE**: To run this :- "bash script.sh"
