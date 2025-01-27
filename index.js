@@ -1,5 +1,6 @@
 const http = require("http");
 const fs = require("fs");
+const fsR = require("fs-reverse");
 const express = require("express");
 const path = require("path");
 const port = 8080;
@@ -11,60 +12,68 @@ const server = http.createServer(app);
 server.listen(port, () => {
     console.log("Server is up and running")
 })
-
-function fetchLastTenLinesOffSet(path) {
-    return new Promise((resolve) => {
-        const file = readline.createInterface({
-            input: fs.createReadStream(path),
-            crlfDelay: Infinity
-        });
-        let numberOfLines = 0;
-        file.on('line', (line) => {
-            numberOfLines++;
-        });
-        file.on('close', () => {
-            resolve(numberOfLines < 10 ? 0 : (numberOfLines - 10));
-        })
-    })
-}
 let lastReadPosition = 0;
-function initialFileLoad(path, socket) {
-    let data = '';
-    lastReadPosition = 0;
-    fetchLastTenLinesOffSet(path).then((lastTenLinesOffSet) => {
-        const file = readline.createInterface({
-            input: fs.createReadStream(path),
-            crlfDelay: Infinity
+function fetchLastReadPosition(path) {
+    return new Promise((resolve, reject) => {
+        let totalBytes = 0;
+        const stream = fs.createReadStream(path, { encoding: 'utf8' });
+        const rl = readline.createInterface({
+            input: stream,
+            output: process.stdout,
+            terminal: false,
         });
-        file.on('line', (line) => {
-            if (lastReadPosition >= lastTenLinesOffSet) {
-                data = data.concat("\n", line);
-            }
-            lastReadPosition += 1;
-        })
-        file.on('close', () => {
-            socket.emit("logFile", data);
-        })
+        rl.on('line', (line) => {
+            totalBytes += Buffer.byteLength(line, 'utf8') + 1; // Account for the newline character
+        });
+
+        rl.on('close', () => {
+            resolve(totalBytes); // Return the total number of bytes read
+        });
     });
+}
+function fetchLastTenLines(filePath) {
+    return new Promise((resolve, reject) => {
+        let lines = [];
+        const stream = fsR(filePath, { encoding: "utf8" });
+        stream
+            .on("data", (line) => {
+                if (lines.length === 10) {
+                    stream.destroy();
+                    return;
+                }
+                lines.push(line);
+            })
+            .on("close", () => {
+                // Reverse the lines array to maintain the correct order
+                resolve(lines.reverse().join("\n"));
+            })
+            .on("error", (err) => {
+                reject(err); // Handle errors during the file reading
+            });
+    });
+}
+function initialFileLoad(path, socket) {
+    lastReadPosition = 0;
+    fetchLastTenLines(path).then((lastTenLinesOffSet) => {
+        socket.emit("logFile", lastTenLinesOffSet);
+    });
+    fetchLastReadPosition(path).then((lastReadLine) => {
+        lastReadPosition = lastReadLine;
+    })
 }
 function readNewLines(path) {
-    let currentLine = 0;
     let data = '';
-    const file = readline.createInterface({
-        input: fs.createReadStream(path),
-        crlfDelay: Infinity
+    const stream = fs.createReadStream(path, {
+        encoding: "utf8",
+        start: lastReadPosition, // Start reading from the last position
     });
-    file.on('line', (line) => {
-        if (currentLine >= lastReadPosition) {
-            data = data.concat("\n", line);
-            lastReadPosition += 1;
-        }
-        currentLine++;
+    stream.on('data', (line) => {
+        data = data.concat("\n", line);
+        lastReadPosition += Buffer.byteLength(line + '\n', 'utf8');
     })
-    file.on('close', () => {
+    stream.on('end', () => {
         io.emit("logFile", data);
     })
-
 }
 const io = new Server(server);
 io.on('connection', (socket) => {
@@ -82,4 +91,4 @@ app.get("/", (req, res) => {
     return res.sendFile(path.join(__dirname, "index.html"));
 });
 
-module.exports = { fetchLastTenLinesOffSet, initialFileLoad, readNewLines };
+module.exports = { fetchLastTenLines, initialFileLoad, readNewLines };

@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "express": "^4.21.2",
+    "fs-reverse": "^0.0.3",
     "mocha": "^11.0.1",
     "sinon": "^19.0.2",
     "socket.io": "^4.8.1"
